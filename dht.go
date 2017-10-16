@@ -50,18 +50,18 @@ type gossipWithReq struct {
 
 // DHT struct holds the data necessary to run the distributed hash table
 type DHT struct {
-	h          *Holochain // pointer to the holochain this DHT is part of
-	db         *buntdb.DB
-	retryQueue chan *retry
-	gossipPuts chan Put
-	glog       *Logger // the gossip logger
-	dlog       *Logger // the dht logger
-	gossips    map[peer.ID]bool
-	gchan      chan gossipWithReq
-	config     *DHTConfig
-	glk        sync.RWMutex
-	//	sources      map[peer.ID]bool
-	//	fingerprints map[string]bool
+	h            *Holochain // pointer to the holochain this DHT is part of
+	db           *buntdb.DB
+	retryQueue   chan *retry
+	gossipPuts   chan Put
+	glog         *Logger // the gossip logger
+	dlog         *Logger // the dht logger
+	gossips      map[peer.ID]bool
+	gchan        chan gossipWithReq
+	config       *DHTConfig
+	glk          sync.RWMutex
+	sources      map[peer.ID]bool
+	fingerprints map[string]bool
 }
 
 type retry struct {
@@ -255,8 +255,8 @@ func NewDHT(h *Holochain) *DHT {
 	dht.retryQueue = make(chan *retry, 100)
 
 	dht.gossips = make(map[peer.ID]bool)
-	//	dht.sources = make(map[peer.ID]bool)
-	//	dht.fingerprints = make(map[string]bool)
+	dht.sources = make(map[peer.ID]bool)
+	dht.fingerprints = make(map[string]bool)
 	dht.gchan = make(chan gossipWithReq, GossipWithQueueSize)
 	dht.gossipPuts = make(chan Put, GossipPutQueueSize)
 

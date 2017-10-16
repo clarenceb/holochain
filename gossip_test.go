@@ -370,7 +370,7 @@ func TestGossipPropigation(t *testing.T) {
 		go func() {
 			for tick := range ticker.C {
 				// abort just in case in 4 seconds (only if propgation fails)
-				if tick.Sub(start) > (10 * time.Second) {
+				if tick.Sub(start) > (20 * time.Second) {
 					//fmt.Printf("Aborting!")
 					stop <- true
 					return
