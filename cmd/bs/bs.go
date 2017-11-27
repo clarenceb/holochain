@@ -47,7 +47,7 @@ func setupApp() (app *cli.App) {
 	app = cli.NewApp()
 	app.Name = "bs"
 	app.Usage = "holochain bootstrap server"
-	app.Version = "0.0.2"
+	app.Version = "0.0.3"
 
 	var port int
 	var dbpath string
@@ -165,6 +165,7 @@ func h(w http.ResponseWriter, r *http.Request) {
 				if req.NodeID != node {
 					err = errors.New("id in post URL doesn't match Req")
 				} else {
+					fmt.Printf("%v", r)
 					err = post(chain, &req, r.RemoteAddr, time.Now())
 					if err == nil {
 						fmt.Fprintf(w, "ok")

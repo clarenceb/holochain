@@ -16,6 +16,7 @@ import (
 	ma "github.com/multiformats/go-multiaddr"
 	"io/ioutil"
 	"net/http"
+	"os"
 	"strings"
 	"time"
 )
@@ -25,9 +26,10 @@ const (
 )
 
 type BSReq struct {
-	Version  int
-	NodeID   string
-	NodeAddr string
+	Version    int
+	NodeID     string
+	NodeAddr   string
+	ReturnAddr string
 }
 
 type BSResp struct {
@@ -42,6 +44,7 @@ func (h *Holochain) BSpost() (err error) {
 	}
 	nodeID := h.nodeIDStr
 	req := BSReq{Version: 1, NodeID: nodeID, NodeAddr: h.node.ExternalAddr().String()}
+	req.ReturnAddr = os.Getenv("HCBOOTSTRAP_RETURN_ADDR")
 	host := h.Config.BootstrapServer
 	id := h.DNAHash()
 	url := fmt.Sprintf("http://%s/%s/%s", host, id.String(), nodeID)
@@ -63,15 +66,26 @@ func (h *Holochain) checkBSResponses(nodes []BSResp) (err error) {
 		var addr ma.Multiaddr
 		id, err = peer.IDB58Decode(r.Req.NodeID)
 		if err == nil {
+			var port, host string
 			//@TODO figure when to use Remote or r.NodeAddr
-			x := strings.Split(r.Remote, ":")
-			y := strings.Split(r.Req.NodeAddr, "/")
-			port := y[len(y)-1]
+			if r.Req.ReturnAddr != "" {
+				x := strings.Split(r.Req.ReturnAddr, ":")
+				if len(x) == 2 {
+					host = x[0]
+					port = x[1]
+				}
+			}
+			if host == "" {
+				x := strings.Split(r.Remote, ":")
+				y := strings.Split(r.Req.NodeAddr, "/")
+				port = y[len(y)-1]
+				host = x[0]
+			}
 
 			// assume the multi-address is the ip address as the bootstrap server saw it
 			// with port number advertised by the node in it's multi-address
 
-			addr, err = ma.NewMultiaddr("/ip4/" + x[0] + "/tcp/" + port)
+			addr, err = ma.NewMultiaddr("/ip4/" + host + "/tcp/" + port)
 			if err == nil {
 				// don't "discover" ourselves
 				if r.Req.NodeID != myNodeID {
